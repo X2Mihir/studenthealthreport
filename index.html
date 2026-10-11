@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Health Passport</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef7f5;
+      margin: 0;
+      color: #243b40;
+    }
+
+    header {
+      background: #138b83;
+      color: white;
+      text-align: center;
+      padding: 25px 12px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+    }
+
+    main {
+      max-width: 700px;
+      margin: 22px auto;
+      padding: 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 18px;
+      border-radius: 14px;
+      box-shadow: 0 3px 12px #00000010;
+    }
+
+    h2 {
+      color: #138b83;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 11px;
+      margin-top: 6px;
+      border: 1px solid #b8d5d0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #138b83;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      margin: 8px 6px 0 0;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #096c65;
+    }
+
+    .secondary {
+      background: #526d82;
+    }
+
+    #report {
+      display: none;
+      line-height: 1.8;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #526d82;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+    }
+
+    @media print {
+      body { background: white; }
+      header, .form-area, footer, .print-button {
+        display: none !important;
+      }
+      main { margin: 0; padding: 0; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
+      #report { display: block !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>💚 Student Health Passport</h1>
+    <p>Your personal wellness record</p>
+  </header>
+
+  <main>
+    <section class="card form-area">
+      <h2>👩‍🎓 Student Profile</h2>
+
+      <form id="healthForm">
+        <label for="name">Student Name</label>
+        <input id="name" required maxlength="80"
+               placeholder="Enter student name">
+
+        <label for="className">Class and Section</label>
+        <input id="className" required maxlength="30"
+               placeholder="e.g. Class 6A">
+
+        <label for="age">Age</label>
+        <input id="age" type="number" min="5" max="25" required>
+
+        <h2>🩺 Health Record</h2>
+
+        <label for="height">Height (cm)</label>
+        <input id="height" type="number" min="30" max="250"
+               step="0.1" required>
+
+        <label for="weight">Weight (kg)</label>
+        <input id="weight" type="number" min="2" max="300"
+               step="0.1" required>
+
+        <label for="allergies">Allergies (optional)</label>
+        <input id="allergies" maxlength="200"
+               placeholder="Enter only if applicable">
+
+        <h2>🌱 Daily Wellness</h2>
+
+        <label for="water">Glasses of Water Today</label>
+        <input id="water" type="number" min="0" max="30" required>
+
+        <label for="sleep">Hours of Sleep</label>
+        <input id="sleep" type="number" min="0" max="24"
+               step="0.5" required>
+
+        <label for="exercise">Physical Activity</label>
+        <select id="exercise" required>
+          <option value="">Choose an option</option>
+          <option>Less than 30 minutes</option>
+          <option>30–60 minutes</option>
+          <option>More than 60 minutes</option>
+        </select>
+
+        <label for="mood">How are you feeling today?</label>
+        <select id="mood" required>
+          <option value="">Choose your mood</option>
+          <option>Happy 😊</option>
+          <option>Calm 😌</option>
+          <option>Tired 😴</option>
+          <option>Stressed 😟</option>
+        </select>
+
+        <label for="notes">Additional Notes (optional)</label>
+        <textarea id="notes" rows="3" maxlength="300"
+          placeholder="Any wellness goals or observations"></textarea>
+
+        <button type="submit">Generate Health Report</button>
+        <button type="reset" class="secondary">Clear Form</button>
+      </form>
+
+      <p class="note">
+        This is an educational wellness tracker, not a medical diagnosis.
+      </p>
+    </section>
+
+    <section class="card" id="report" aria-live="polite">
+      <h2>📘 My Health Passport Report</h2>
+      <p><strong>Date:</strong> <span id="rDate"></span></p>
+      <div id="reportContent"></div>
+
+      <button class="print-button" onclick="window.print()">
+        Print / Save as PDF
+      </button>
+      <button class="secondary print-button"
+              onclick="document.getElementById('report').style.display='none'">
+        Close Report
+      </button>
+    </section>
+  </main>
+
+  <footer>
+    Student Health Passport | Learn • Grow • Stay Well
+  </footer>
+
+  <script>
+    const form = document.getElementById("healthForm");
+    const report = document.getElementById("report");
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const get = id => document.getElementById(id).value.trim();
+
+      const data = {
+        name: get("name"),
+        className: get("className"),
+        age: Number(get("age")),
+        height: Number(get("height")),
+        weight: Number(get("weight")),
+        allergies: get("allergies") || "Not provided",
+        water: Number(get("water")),
+        sleep: Number(get("sleep")),
+        exercise: get("exercise"),
+        mood: get("mood"),
+        notes: get("notes") || "None"
+      };
+
+      document.getElementById("rDate").textContent =
+        new Date().toLocaleDateString();
+
+      const fields = [
+        ["Student Name", data.name],
+        ["Class and Section", data.className],
+        ["Age", data.age + " years"],
+        ["Height", data.height + " cm"],
+        ["Weight", data.weight + " kg"],
+        ["Allergies", data.allergies],
+        ["Water Intake", data.water + " glasses"],
+        ["Sleep", data.sleep + " hours"],
+        ["Physical Activity", data.exercise],
+        ["Mood", data.mood],
+        ["Additional Notes", data.notes]
+      ];
+
+      document.getElementById("reportContent").innerHTML =
+        fields.map(([label, value]) =>
+          `<p><strong>${escapeHTML(label)}:</strong> ${escapeHTML(value)}</p>`
+        ).join("");
+
+      report.style.display = "block";
+      report.scrollIntoView({ behavior: "smooth" });
+    });
+
+    form.addEventListener("reset", function() {
+      report.style.display = "none";
+    });
+  </script>
+</body>
+</html>
